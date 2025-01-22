@@ -21,11 +21,11 @@
 
 .container{
     background-color: #fff;
-    border-radius: 30px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.35);
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     position: relative;
     overflow: hidden;
-    width: 768px;
+    width: 400px;
     max-width: 100%;
     min-height: 480px;
     display: flex;
@@ -69,7 +69,8 @@
   
 .container button.hidden{
     background-color: transparent;
-    border-color: #fff;
+    border-color: #ffffff;
+    
 
 }
 
@@ -84,7 +85,7 @@
 }
 
 .container input{
-    background-color: #eee;
+    background-color: #eee; 
     border: none;
     margin: 8px 0;
     padding: 10px 15px;

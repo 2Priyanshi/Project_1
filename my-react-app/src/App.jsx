@@ -1,24 +1,31 @@
+<<<<<<< HEAD
 // App.jsx
 import React, { useState } from "react";
+=======
+>>>>>>> ebac1a9f2e2faf3937438355d61db11412d32deb
 
+import React, { useState } from "react";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom"; // Updated import
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Dashboard from "./components/Dashboard";
-import Portfolio from "./components/Portfolio";
-import MarketTrends from "./components/MarketTrends";
-import Trade from "./components/Trade";
 import Login from "./components/Login";
 import "./App.css";
-import "./components/Login.css";
 
 
 const App = () => {
+<<<<<<< HEAD
   const [isActive, setIsActive] = useState(false);
+=======
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [stockSymbol, setStockSymbol]= useState("IBM");
+>>>>>>> ebac1a9f2e2faf3937438355d61db11412d32deb
 
   const handleLogin = () => {
-    setIsLoggedIn(true); // Handler for login functionality
+    setIsLoggedIn(true); // Set login state to true after successful login
   };
 
+<<<<<<< HEAD
   return (
     <div className={`container ${isActive ? "active" : ""}`} id="container">
       <div className="form-container sign-up">
@@ -60,8 +67,46 @@ const App = () => {
         </div>
       </div>
     </div>
+=======
+  const[darkMode,setDarkMode] = useState(false);
+
+  return (
+
+    <Router>
+      <div className="container">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              !isLoggedIn ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              isLoggedIn ? (
+                <div className="app-content">
+                  <Header />
+                  <div className="main-content">
+                    <Dashboard />
+                  </div>
+                  <Footer />
+                </div>
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+        </Routes>
+      </div>
+    </Router>
+
+>>>>>>> ebac1a9f2e2faf3937438355d61db11412d32deb
   );
 };
 
 export default App;
+<<<<<<< HEAD
 
+=======
+>>>>>>> ebac1a9f2e2faf3937438355d61db11412d32deb
