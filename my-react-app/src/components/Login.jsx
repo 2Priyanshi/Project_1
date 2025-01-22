@@ -227,6 +227,7 @@ import { useNavigate } from "react-router-dom"; // Updated import
 import "./Login.css";
 
 const Login = ({ onLogin }) => {
+
   const [isActive, setIsActive] = useState(false); // Toggles between login and register forms
   const [formData, setFormData] = useState({
     name: "",
@@ -282,8 +283,10 @@ const Login = ({ onLogin }) => {
 
   // Toggle to login form
   const handleLoginClick = () => {
+
     setIsActive(false);
     setMessage("");
+c2f611e055f1199b55beadbe45bc86dd5586576b
   };
 
   return (
@@ -352,7 +355,7 @@ const Login = ({ onLogin }) => {
           <div className="toggle-panel toggle-left">
             <h1 className="text-color-header2">Welcome Back</h1>
             <p>Enter your personal details to use all of the site's features</p>
-            <button className="hidden" onClick={handleLoginClick}>
+            <button onClick={handleLoginClick}>
               Sign In
             </button>
           </div>
@@ -361,7 +364,7 @@ const Login = ({ onLogin }) => {
           <div className="toggle-panel toggle-right">
             <h1 className="text-color-header2">Hello there!</h1>
             <p>Register with your personal details to use all of the site's features</p>
-            <button className="hidden" onClick={handleRegisterClick}>
+            <button onClick={handleRegisterClick}>
               Sign Up
             </button>
           </div>
@@ -375,5 +378,7 @@ const Login = ({ onLogin }) => {
 };
 
 export default Login;
+
+
 
 

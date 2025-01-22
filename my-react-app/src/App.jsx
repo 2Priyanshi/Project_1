@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom"; // Updated import
 import Header from "./components/Header";
@@ -6,14 +7,19 @@ import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import "./App.css";
 
+
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [stockSymbol, setStockSymbol]= useState("IBM");
 
   const handleLogin = () => {
     setIsLoggedIn(true); // Set login state to true after successful login
   };
 
+  const[darkMode,setDarkMode] = useState(false);
+
   return (
+
     <Router>
       <div className="container">
         <Routes>
@@ -42,6 +48,7 @@ const App = () => {
         </Routes>
       </div>
     </Router>
+
   );
 };
 
