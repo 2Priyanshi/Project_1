@@ -1,24 +1,17 @@
 package com.login.example.login.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 @Entity
+
 public class Login {
-
     @Id
-    @Column(nullable = false, unique = true)
-
     private String email;
-
     private String password;
 
-    public Login(){}
-    public Login(String email, String password) {
-        this.email = email;
-        this.password = password;
-    }
-
+    // Getters and Setters
     public String getEmail() {
         return email;
     }
@@ -34,6 +27,4 @@ public class Login {
     public void setPassword(String password) {
         this.password = password;
     }
-
-
 }
