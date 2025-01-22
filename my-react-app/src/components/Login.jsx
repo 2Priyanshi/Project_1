@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import "./Login.css";
 
 const Login = ({ onLogin }) => {
-  const [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(false);  // Toggles between login and register
 
   const handleRegisterClick = () => {
-    setIsActive(true);
+    setIsActive(true);  // Switch to the register form
   };
 
   const handleLoginClick = () => {
-    setIsActive(false);
+    setIsActive(false);  // Switch to the login form
   };
 
   return (
@@ -43,7 +43,7 @@ const Login = ({ onLogin }) => {
           <div className="toggle-panel toggle-left">
             <h1 className="text-color-header2">Welcome Back</h1>
             <p>Enter your personal details to use all of the site's features</p>
-            <button className="hidden" onClick={handleLoginClick}>
+            <button onClick={handleLoginClick}>
               Sign In
             </button>
           </div>
@@ -52,7 +52,7 @@ const Login = ({ onLogin }) => {
           <div className="toggle-panel toggle-right">
             <h1 className="text-color-header2">Hello there!</h1>
             <p>Register with your personal details to use all of the site's features</p>
-            <button className="hidden" onClick={handleRegisterClick}>
+            <button onClick={handleRegisterClick}>
               Sign Up
             </button>
           </div>
@@ -63,4 +63,3 @@ const Login = ({ onLogin }) => {
 };
 
 export default Login;
-

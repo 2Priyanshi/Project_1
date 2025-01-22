@@ -1,22 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Dashboard from "./components/Dashboard";
-import Portfolio from "./components/Portfolio";
-import MarketTrends from "./components/MarketTrends";
-import Trade from "./components/Trade";
+
 import Login from "./components/Login";
 import "./App.css";
-import "./components/Login.css";
+import ThemeContext from "./context/ThemeContext";
+import StockContext from "./context/StockContext";
+
 
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [stockSymbol, setStockSymbol]= useState("IBM");
 
   const handleLogin = () => {
     setIsLoggedIn(true); // Handler for login functionality
   };
+
+  const[darkMode,setDarkMode] = useState(false);
 
   return (
     <div className="container" id="container">
@@ -26,10 +29,12 @@ const App = () => {
         <div className="app-content">
           <Header />
           <div className="main-content">
-            <Dashboard />
-            <div className="bg-blue-500 text-white p-4 rounded-lg">
-  This is a Tailwind styled div!
-</div>
+           <ThemeContext.Provider value={{darkMode,setDarkMode}}> 
+            <StockContext.Provider value={{stockSymbol, setStockSymbol}}>
+            <Dashboard /> 
+            </StockContext.Provider>
+            </ThemeContext.Provider>
+          
 
             
           </div>
