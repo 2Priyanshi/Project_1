@@ -62,12 +62,12 @@ useEffect(() => {
 
 }, [stockSymbol]);
 
-  return <div className={`h-screen grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 grid-rows-8 md:grid-rows-7 xl:grid-rows-5 auto-rows-fr gap-3 p-5 font-quicksand ${darkMode ? "bg-gray-900 text-gray-100" : "bg-neutral-100" }`}>
-    <div className="col-span-1 md:col-span-2 xl:col-span-3 row-span-1 flex justify-start items-center">
+  return <div className={`h-screen grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 grid-rows-8 md:grid-rows-7 xl:grid-rows-5 auto-rows-fr gap-2 p-3 font-quicksand ${darkMode ? "bg-gray-900 text-gray-100" : "bg-neutral-100" }`}>
+    <div className="col-span-1 md:col-span-2 xl:col-span-3 row-span-1 flex justify-start items-center mt-0">
       <Header2 name={stockDetails.name}/>
     </div>
     <div className="md:col-span-2 row-span-4">
-    {/*<LiveChart symbol={"IBM"} /> */}
+    <LiveChart symbol={stockSymbol} />
     </div>
 
     <div>

@@ -44,8 +44,10 @@ html, body, #root, .container {
     color: #512da8;
   }
   
-  .main-content input{
-    background-color: #d6deeb;
+  .app-content input{
+    
     margin: 0px;
+    
+    
     
   }
