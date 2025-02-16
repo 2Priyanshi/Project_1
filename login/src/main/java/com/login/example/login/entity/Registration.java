@@ -3,7 +3,6 @@ package com.login.example.login.entity;
 import jakarta.persistence.*;
 
 @Entity
-
 public class Registration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
