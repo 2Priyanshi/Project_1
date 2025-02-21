@@ -6,6 +6,8 @@ import Footer from "./components/Footer";
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import "./App.css";
+import ThemeContext from "./context/ThemeContext";
+import StockContext from "./context/StockContext";
 
 
 const App = () => {
@@ -36,7 +38,12 @@ const App = () => {
                 <div className="app-content">
                   <Header />
                   <div className="main-content">
-                    <Dashboard />
+                    <ThemeContext.Provider value={{darkMode,setDarkMode}}>
+                      <StockContext.Provider value={{stockSymbol,setStockSymbol}}>
+                      <Dashboard />
+                      </StockContext.Provider>
+                    </ThemeContext.Provider>
+                   
                   </div>
                   <Footer />
                 </div>

@@ -67,7 +67,7 @@ useEffect(() => {
       <Header2 name={stockDetails.name}/>
     </div>
     <div className="md:col-span-2 row-span-4">
-    {/*<LiveChart symbol={"IBM"} /> */}
+    <LiveChart symbol={"IBM"} />
     </div>
 
     <div>
