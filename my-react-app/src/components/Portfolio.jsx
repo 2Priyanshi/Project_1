@@ -13,6 +13,18 @@ function Portfolio() {
   const [quantity, setQuantity] = useState(""); 
   const [entryPrice, setEntryPrice] = useState(""); 
   const [investments, setInvestments] = useState([]);
+  const [balance,setBalance] = useState("");
+  const userId = localStorage.getItem("userId");
+
+useEffect(() => {
+  if (!userId) return;
+
+  fetch(`http://localhost:8080/api/wallet/${userId}/balance`)
+    .then((res) => res.json())
+    .then((data) => setBalance(data))
+    .catch((err) => console.error("Error fetching balance:", err));
+}, [userId]);
+
   useEffect(()=>{
     if(selectedCompany){
       const getCompanyDetails = async()=>{
@@ -156,7 +168,127 @@ function Portfolio() {
                 )}
               </div>
             ) : (
-              <div className="text-center">No company selected so far.</div>
+            <div>
+              <div className="text-center flex">
+                <Card className='justify-start flex'>
+                  <div className='text-left text-lg'>
+                        <div>
+                             {balance}
+                        </div>
+                        <div className=' text-sm mt-1'>
+                            Total Portfolio
+                        </div>
+                        
+                      </div>
+
+                      
+                </Card>
+                <Card className='flex justify-end '>
+                <div className='text-left text-sm'>
+                        <div>
+                          Available Margin: 9,99,996.00 
+                        </div>
+                        <div className='mt-3'>
+                          Invested Margin:  0.00
+                        </div>
+                          
+                      </div>
+                </Card>
+              </div>
+              <div>
+                <Card className='flex'>
+                  <ul>
+                    <li className='p-3'>
+                      <span>
+                        RELIANCE
+                      </span>
+                      <span className='text-right absolute right-10'>
+                        1235.25
+                      </span>
+                      
+                    </li><hr></hr>
+                    <li className='p-3'>
+                    <span>
+                        RELIANCE
+                      </span>
+                      <span className='text-right absolute right-10'>
+                        1235.25
+                      </span>
+                    </li><hr></hr>
+                    <li  className='p-3'>
+                    <span>
+                        RELIANCE
+                      </span>
+                      <span className='text-right absolute right-10'>
+                        1235.25
+                      </span>
+                    </li><hr></hr>
+                    <li  className='p-3'>
+                    <span>
+                        RELIANCE
+                      </span>
+                      <span className='text-right absolute right-10'>
+                        1235.25
+                      </span>  
+                    </li><hr></hr>
+                    <li className='p-3'>
+                    <span>
+                        RELIANCE
+                      </span>
+                      <span className='text-right absolute right-10'>
+                        1235.25
+                      </span>  
+                    </li><hr></hr>
+                    <li className='p-3'>
+                    <span>
+                        RELIANCE
+                      </span>
+                      <span className='text-right absolute right-10'>
+                        1235.25
+                      </span>
+                    </li><hr></hr>
+                    <li className='p-3'>
+                    <span>
+                        RELIANCE
+                      </span>
+                      <span className='text-right absolute right-10'>
+                        1235.25
+                      </span> 
+                    </li><hr></hr>
+                    <li className='p-3'>
+                    <span>
+                        RELIANCE
+                      </span>
+                      <span className='text-right absolute right-10'>
+                        1235.25
+                      </span>  
+                    </li><hr></hr>
+                    <li className='p-3'>
+                    <span>
+                        RELIANCE
+                      </span>
+                      <span className='text-right absolute right-10'>
+                        1235.25
+                      </span>  
+                    </li><hr></hr>
+                    <li className='p-3'>
+                    <span>
+                        RELIANCE
+                      </span>
+                      <span className='text-right absolute right-10'>
+                        1235.25
+                      </span>  
+                    </li><hr></hr>
+                    
+
+                    
+                  </ul>
+
+                </Card>
+
+              </div>
+            </div>
+              
             )}
           </Card>
         </div>

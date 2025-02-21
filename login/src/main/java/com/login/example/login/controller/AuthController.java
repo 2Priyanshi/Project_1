@@ -25,11 +25,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody Registration loginRequest) {
-        boolean isValid = authService.validateLogin(loginRequest.getEmail(), loginRequest.getPassword());
-        if (isValid) {
-            return ResponseEntity.ok("Login successful!");
+    public ResponseEntity<?> loginUser(@RequestBody Registration loginRequest) {
+        Registration user = authService.validateLogin(loginRequest.getEmail(), loginRequest.getPassword());
+
+        if (user != null) {
+            // Return user ID along with success message
+            return ResponseEntity.ok("{ \"message\": \"Login successful!\", \"userId\": " + user.getId() + " }");
         }
-        return ResponseEntity.status(401).body("Invalid email or password.");
+        return ResponseEntity.status(401).body("{ \"message\": \"Invalid email or password.\" }");
     }
 }

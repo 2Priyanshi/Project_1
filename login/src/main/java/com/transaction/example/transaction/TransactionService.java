@@ -1,5 +1,6 @@
 package com.transaction.example.transaction;
 
+import com.login.example.login.entity.Registration;
 import com.trading.example.wallet.Wallet;
 import com.trading.example.wallet.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +17,21 @@ public class TransactionService {
     @Autowired
     private WalletRepository walletRepository;
 
+    @Autowired
+    public TransactionService(TransactionRepository transactionRepository, WalletRepository walletRepository) {
+        this.transactionRepository = transactionRepository;
+        this.walletRepository = walletRepository;
+    }
+
+
+
     @Transactional
     public String executeTransaction(Transaction transaction) {
-        Wallet wallet = walletRepository.findByUserId(transaction.getUser().getId())
+        Registration user = transaction.getUser();
+        if(user == null) {
+            throw new RuntimeException("User not found");
+        }
+        Wallet wallet = walletRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
 
         double transactionAmount = transaction.getQuantity() * transaction.getPrice();

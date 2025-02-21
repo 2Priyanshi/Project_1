@@ -263,17 +263,22 @@ const Login = ({ onLogin }) => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8080/api/login", {
-        email: formData.email,
-        password: formData.password,
-      });
-      setMessage(response.data);
-      onLogin(); // Notify App component that login was successful
-      navigate("/dashboard"); // Use navigate to redirect to dashboard
+        const response = await axios.post("http://localhost:8080/api/login", {
+            email: formData.email,
+            password: formData.password,
+        });
+
+        if (response.status === 200) {
+            localStorage.setItem("userId", response.data.userId); 
+            alert("Login successful!");
+            setMessage(response.data.message);
+            onLogin(); 
+            navigate("/dashboard"); 
+        }
     } catch (error) {
-      setMessage(error.response?.data || "Login failed.");
+        setMessage(error.response?.data || "Login failed.");
     }
-  };
+};
 
   // Toggle to registration form
   const handleRegisterClick = () => {
