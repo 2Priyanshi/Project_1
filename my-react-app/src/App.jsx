@@ -8,6 +8,7 @@ import Login from "./components/Login";
 import "./App.css";
 import ThemeContext from "./context/ThemeContext";
 import StockContext from "./context/StockContext";
+import Portfolio from "./components/Portfolio";
 
 
 const App = () => {
@@ -41,7 +42,12 @@ const App = () => {
                 <div className="app-content">
                   <Header />
                   <div className="main-content">
-                    <Dashboard />
+                    <ThemeContext.Provider value={{darkMode,setDarkMode}}>
+                      <StockContext.Provider value={{stockSymbol,setStockSymbol}}>
+                      <Dashboard />
+                      </StockContext.Provider>
+                    </ThemeContext.Provider>
+                   
                   </div>
                   <Footer />
                 </div>
@@ -50,6 +56,7 @@ const App = () => {
               )
             }
           />
+           <Route path="/portfolio" element={<div><ThemeContext.Provider value={{darkMode,setDarkMode}}><Portfolio/> </ThemeContext.Provider></div>}></Route>
         </Routes>
       </div>
     </Router>
