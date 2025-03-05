@@ -29,17 +29,29 @@ public class TransactionService {
         Wallet wallet = walletRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
 
-
         if (user == null || wallet == null) return null;
 
-        BigDecimal totalAmount = BigDecimal.valueOf(quantity * price);
-        if (orderType == OrderType.BUY && wallet.getBalance() < totalAmount.doubleValue()) {
-            throw new RuntimeException("Insufficient balance");
+        if (quantity <= 0) {
+            throw new RuntimeException("Quantity must be greater than zero");
         }
 
+        if (price <= 0) {
+            throw new RuntimeException("Invalid stock price");
+        }
+
+        BigDecimal totalAmount = BigDecimal.valueOf(quantity * price);
+
         if (orderType == OrderType.BUY) {
+            if (wallet.getBalance() < totalAmount.doubleValue()) {
+                throw new RuntimeException("Insufficient balance");
+            }
             wallet.setBalance(wallet.getBalance() - totalAmount.doubleValue());
         } else {
+            // **Check if the user owns enough stocks before selling**
+            int ownedShares = transactionRepository.getOwnedShares(userId, stockSymbol);
+            if (quantity > ownedShares) {
+                throw new RuntimeException("Insufficient shares to sell");
+            }
             wallet.setBalance(wallet.getBalance() + totalAmount.doubleValue());
         }
 
