@@ -24,7 +24,7 @@ return (<Card>
         {Object.keys(detailsList).map((item)=>{
             return (<li key={item} className="flex-1 flex justify-between items-center">
                 <span>{detailsList[item]}</span>
-                <span>{item === "marketCapitalization" ? `${convertMillionToBillion(details[item])}B` : details[item]}</span>
+                <span>{item === "MarketCapitalization" ? `${convertMillionToBillion(details[item])}B` : details[item]}</span>
             </li>
         );
         })}

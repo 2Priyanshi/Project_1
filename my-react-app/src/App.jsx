@@ -9,14 +9,20 @@ import "./App.css";
 import ThemeContext from "./context/ThemeContext";
 import StockContext from "./context/StockContext";
 
+import Portfolio from "./components/Portfolio";
+
+
 
 const App = () => {
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [stockSymbol, setStockSymbol]= useState("IBM");
+
 
   const handleLogin = () => {
     setIsLoggedIn(true); // Set login state to true after successful login
   };
+
 
   const[darkMode,setDarkMode] = useState(false);
 
@@ -52,11 +58,14 @@ const App = () => {
               )
             }
           />
+           <Route path="/portfolio" element={<div><ThemeContext.Provider value={{darkMode,setDarkMode}}><Portfolio/> </ThemeContext.Provider></div>}></Route>
         </Routes>
       </div>
     </Router>
+
 
   );
 };
 
 export default App;
+
