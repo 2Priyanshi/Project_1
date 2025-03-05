@@ -3,7 +3,9 @@ import Card from './Card';
 import ThemeContext from '../context/ThemeContext';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { fetchStockDetails } from '../api/stock-api';
+import { fetchStockDetails, fetchQuote } from '../api/stock-api';
+import { motion } from "framer-motion";
+
 
 function Portfolio() {
   const {darkMode}= useContext(ThemeContext);
@@ -15,6 +17,14 @@ function Portfolio() {
   const [investments, setInvestments] = useState([]);
   const [balance,setBalance] = useState("");
   const userId = localStorage.getItem("userId");
+  const [totalProfit, setTotalProfit] = useState(0);
+  const [totalLoss, setTotalLoss] = useState(0);
+  const [pendingTrade, setPendingTrade] = useState(null);
+
+  const data = [
+    { name: "Profit", value: totalProfit, color: "#4CAF50" }, // Green for Profit
+    { name: "Loss", value: totalLoss, color: "#F44336" }, // Red for Loss
+  ];
 
 useEffect(() => {
   if (!userId) return;
@@ -52,20 +62,166 @@ useEffect(() => {
     "Wagend Infra Venture",
   ];
 
-  const handleTrade = (action) => {
-    if (!selectedCompany || !quantity || !entryPrice) return;
+  const fetchStockPrice = async () => {
+    if (!selectedCompany) {
+        console.error("Stock symbol is missing.");
+        return null;
+    }
 
-    const newInvestment = {
-      company: selectedCompany,
-      quantity: quantity,
-      entryPrice: entryPrice,
-      action: action, 
-    };
+    try {
+        const result = await fetchQuote(selectedCompany);
+        const price = parseFloat(result["Global Quote"]?.["05. price"] || 0).toFixed(2);
 
-    setInvestments([...investments, newInvestment]);
-    setQuantity(""); 
-    setEntryPrice("");
+        if (!price || price === "0.00") {
+            console.error(`Failed to fetch stock price for ${selectedCompany}.`);
+            return null;
+        }
+
+        return price;
+    } catch (error) {
+        console.error(`Error fetching stock price for ${selectedCompany}:`, error);
+        return null;
+    }
+};
+
+const handleTrade = async (action, stockSymbol, qty) => {
+  const symbol = stockSymbol || selectedCompany;
+  const quantityToSell = qty || quantity;
+ 
+  
+
+  if (!symbol || !quantityToSell || !userId) {
+    console.error("Missing required fields for transaction.");
+    return;
+  }
+
+  console.log(".....");
+  console.log(selectedCompany);
+  console.log(".....");
+
+  const price = await fetchStockPrice();
+  if (!price) {
+    alert("Transaction failed: Unable to fetch stock price.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:8080/api/transactions/${action.toLowerCase()}?userId=${userId}&stockSymbol=${symbol}&quantity=${quantityToSell}&price=${price}`, {
+      method: "POST",
+      headers: { "Accept": "application/json" },
+    });
+
+    if (!response.ok) throw new Error("Transaction failed!");
+
+    const data = await response.json();
+    alert("Transaction successful!");
+    fetchInvestments(); // Refresh investments after selling
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Transaction failed: " + error.message);
+  }
+};
+  
+
+  
+  const fetchInvestments = async () => {
+    if (!userId) return;
+  
+    try {
+      const response = await fetch(`http://localhost:8080/api/transactions/${userId}`);
+      if (!response.ok) throw new Error("Failed to fetch investments");
+  
+      const data = await response.json();
+  
+      // Group investments by stock symbol
+      const groupedInvestments = {};
+      
+      for (const investment of data) {
+        const { stockSymbol, orderType, quantity, totalAmount, price } = investment;
+        
+        if (!groupedInvestments[stockSymbol]) {
+          groupedInvestments[stockSymbol] = {
+            totalBuy: 0,
+            quantity: 0,
+            stockSymbol,
+          };
+        }
+  
+        if (orderType === "BUY") {
+          groupedInvestments[stockSymbol].totalBuy += parseFloat(totalAmount);
+          groupedInvestments[stockSymbol].quantity += quantity;
+        } else if (orderType === "SELL") {
+          groupedInvestments[stockSymbol].totalBuy -= parseFloat(totalAmount);
+          groupedInvestments[stockSymbol].quantity -= quantity;
+        }
+      }
+  
+      // Convert grouped object into an array
+      const investmentArray = Object.values(groupedInvestments);
+  
+      // Fetch current stock prices
+      const updatedInvestments = await Promise.all(
+        investmentArray.map(async (inv) => {
+          const stockData = await fetchStockDetails(inv.stockSymbol); // API call to get latest stock price
+          const currentPrice = parseFloat(stockData.Price) || 0; // Assume 0 if no price found
+          const marketValue = currentPrice * inv.quantity;
+  
+          return {
+            ...inv,
+            currentPrice,
+            marketValue,
+            profitOrLoss: (marketValue - inv.totalBuy).toFixed(2), // Profit/Loss formula
+          };
+        })
+      );
+  
+      setInvestments(updatedInvestments);
+    } catch (error) {
+      console.error("Error fetching investments:", error);
+    }
   };
+  
+  useEffect(() => {
+    let profit = 0;
+    let loss = 0;
+  
+    investments.forEach(inv => {
+      if (inv.profitOrLoss >= 0) {
+        profit += parseFloat(inv.profitOrLoss);
+      } else {
+        loss += Math.abs(parseFloat(inv.profitOrLoss));
+      }
+    });
+  
+    setTotalProfit(profit);
+    setTotalLoss(loss);
+  }, [investments]); // Runs whenever investments update
+  
+  useEffect(() => {
+    if (userId) {
+      fetchInvestments();
+    }
+  }, [userId]); // Ensures it runs when `userId` is available
+  
+  
+ 
+
+const handleSell = (stockSymbol, quantity) => {
+    console.log("Updating selected company to:", stockSymbol);
+    setSelectedCompany(stockSymbol);
+    setPendingTrade({ action: "SELL", stockSymbol, quantity });
+};
+
+useEffect(() => {
+    if (pendingTrade && selectedCompany === pendingTrade.stockSymbol) {
+        console.log("Executing trade for:", selectedCompany);
+        handleTrade(pendingTrade.action, pendingTrade.stockSymbol, pendingTrade.quantity);
+        setPendingTrade(null); // Reset pending trade
+    }
+}, [selectedCompany]);
+
+
+  
 
 
   return (
@@ -76,260 +232,203 @@ useEffect(() => {
         }`}
       >
         {/* First Card (Left) */}
-        <div className="flex justify-start items-center">
-          <Card className="bg-gray-200 p-6 rounded-lg shadow-md w-4/5">
-            {selectedCompany ? (
-              <div>
-                <h2 className="font-bold text-lg">{selectedCompany}</h2>
-                <form className="mt-4 space-y-3">
-                  
-                  {/* Quantity Row */}
-                  <div className="flex items-center gap-4">
-                    <label className="w-40 font-medium">Quantity:</label>
-                    <input
-                      type="number"
-                      className="w-1/3 p-2 border rounded"
-                      placeholder=""
-                      value={quantity}
-                      onChange={(e) => setQuantity(e.target.value)}
-                    />
-                    <input
-                      type="number"
-                      className="w-1/3 p-2 border rounded"
-                      placeholder="Entry price"
-                      value={entryPrice}
-                      onChange={(e) => setEntryPrice(e.target.value)}
-                    />
-                  </div>
-                  
-                  {/* Time Frame Row */}
-                  <div className="flex items-center gap-4">
-                    <label className="w-40 font-medium text-right pr-4">
-                      Time Frame:
-                    </label>
-                    <DatePicker
-                      selected={selectedDate}
-                      onChange={(date) => setSelectedDate(date)}
-                      dateFormat="dd/MM/yyyy"
-                      className="w-1/3 p-2 border rounded"
-                      placeholderText="Select a date"
-                    />
-                  </div>
+        <div className={`flex justify-start items-center transition-all duration-500 ease-in-out ${darkMode ? "bg-gray-900 text-gray-100" : "bg-neutral-100"}`}>
+  <Card className={`bg-gray-200 p-6 rounded-lg shadow-md w-4/5 transition-all duration-500 ease-in-out transform hover:scale-[1.02] ${darkMode ? "bg-gray-900 text-gray-100" : "bg-neutral-100"}`}>
+    {selectedCompany ? (
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <h2 className="font-bold text-lg">{selectedCompany}</h2>
+        <form className="mt-4 space-y-3">
+          
+          {/* Quantity Row */}
+          <div className="flex items-center gap-4">
+            <label className="w-40 font-medium">Quantity:</label>
+            <input
+              type="number"
+              min="1"
+              className="w-1/3 p-2 border rounded focus:ring-2 focus:ring-blue-400 transition"
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value)))}
+            />
+            <input
+              type="number"
+              className="w-1/3 p-2 border rounded focus:ring-2 focus:ring-blue-400 transition"
+              placeholder="Entry price"
+              value={entryPrice}
+              onChange={(e) => setEntryPrice(e.target.value)}
+            />
+          </div>
+          
+          {/* Time Frame Row */}
+          <div className="flex items-center gap-4">
+            <label className="w-40 font-medium text-right pr-4">Time Frame:</label>
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date) => setSelectedDate(date)}
+              dateFormat="dd/MM/yyyy"
+              className="w-1/3 p-2 border rounded focus:ring-2 focus:ring-blue-400 transition"
+              placeholderText="Select a date"
+            />
+          </div>
 
-                  {/* Stoploss & Target Row */}
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="number"
-                      className="w-1/3 p-2 border rounded"
-                      placeholder="Stoploss"
-                    />
-                    <input
-                      type="number"
-                      className="w-1/3 p-2 border rounded"
-                      placeholder="Target"
-                    />
-                  </div>
+          {/* Stoploss & Target Row */}
+          <div className="flex items-center gap-4">
+            <input type="number" className="w-1/3 p-2 border rounded" placeholder="Stoploss" />
+            <input type="number" className="w-1/3 p-2 border rounded" placeholder="Target" />
+          </div>
 
-                  {/* Buy & Sell Buttons */}
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      type="button"
-                      className="bg-green-500 text-white px-4 py-2 rounded"
-                      onClick={() => handleTrade("Buy")}
-                    >
-                      Buy
-                    </button>
-                    <button
-                      type="button"
-                      className="bg-red-500 text-white px-4 py-2 rounded"
-                      onClick={() => handleTrade("Sell")}
-                    >
-                      Sell
-                    </button>
-                  </div>
-                </form>
-
-                {/* Investment List */}
-                {investments.length > 0 && (
-                  <div className="mt-6">
-                    <h3 className="font-bold text-md mb-2">Invested Companies</h3>
-                    <ul className="bg-white p-4 rounded-lg shadow">
-                      {investments.map((inv, index) => (
-                        <li key={index} className="flex justify-between border-b py-2">
-                          <span className="font-medium">{inv.company}</span>
-                          <span>{inv.quantity} shares</span>
-                          <span className={inv.action === "Buy" ? "text-green-500" : "text-red-500"}>
-                            {inv.action}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ) : (
-            <div>
-              <div className="text-center flex">
-                <Card className='justify-start flex'>
-                  <div className='text-left text-lg'>
-                        <div>
-                             {balance}
-                        </div>
-                        <div className=' text-sm mt-1'>
-                            Total Portfolio
-                        </div>
-                        
-                      </div>
-
-                      
-                </Card>
-                <Card className='flex justify-end '>
-                <div className='text-left text-sm'>
-                        <div>
-                          Available Margin: 9,99,996.00 
-                        </div>
-                        <div className='mt-3'>
-                          Invested Margin:  0.00
-                        </div>
-                          
-                      </div>
-                </Card>
-              </div>
-              <div>
-                <Card className='flex'>
-                  <ul>
-                    <li className='p-3'>
-                      <span>
-                        RELIANCE
-                      </span>
-                      <span className='text-right absolute right-10'>
-                        1235.25
-                      </span>
-                      
-                    </li><hr></hr>
-                    <li className='p-3'>
-                    <span>
-                        RELIANCE
-                      </span>
-                      <span className='text-right absolute right-10'>
-                        1235.25
-                      </span>
-                    </li><hr></hr>
-                    <li  className='p-3'>
-                    <span>
-                        RELIANCE
-                      </span>
-                      <span className='text-right absolute right-10'>
-                        1235.25
-                      </span>
-                    </li><hr></hr>
-                    <li  className='p-3'>
-                    <span>
-                        RELIANCE
-                      </span>
-                      <span className='text-right absolute right-10'>
-                        1235.25
-                      </span>  
-                    </li><hr></hr>
-                    <li className='p-3'>
-                    <span>
-                        RELIANCE
-                      </span>
-                      <span className='text-right absolute right-10'>
-                        1235.25
-                      </span>  
-                    </li><hr></hr>
-                    <li className='p-3'>
-                    <span>
-                        RELIANCE
-                      </span>
-                      <span className='text-right absolute right-10'>
-                        1235.25
-                      </span>
-                    </li><hr></hr>
-                    <li className='p-3'>
-                    <span>
-                        RELIANCE
-                      </span>
-                      <span className='text-right absolute right-10'>
-                        1235.25
-                      </span> 
-                    </li><hr></hr>
-                    <li className='p-3'>
-                    <span>
-                        RELIANCE
-                      </span>
-                      <span className='text-right absolute right-10'>
-                        1235.25
-                      </span>  
-                    </li><hr></hr>
-                    <li className='p-3'>
-                    <span>
-                        RELIANCE
-                      </span>
-                      <span className='text-right absolute right-10'>
-                        1235.25
-                      </span>  
-                    </li><hr></hr>
-                    <li className='p-3'>
-                    <span>
-                        RELIANCE
-                      </span>
-                      <span className='text-right absolute right-10'>
-                        1235.25
-                      </span>  
-                    </li><hr></hr>
-                    
-
-                    
-                  </ul>
-
-                </Card>
-
-              </div>
+          {/* Buy & Sell Buttons */}
+          <div className="flex gap-2 mt-3">
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.05 }}
+              className="bg-green-500 text-white px-4 py-2 rounded transition-all shadow-md hover:bg-green-600"
+              onClick={() => handleTrade("Buy")}
+            >
+              Buy
+            </motion.button>
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.05 }}
+              className="bg-red-500 text-white px-4 py-2 rounded transition-all shadow-md hover:bg-red-600"
+              onClick={() => handleTrade("Sell")}
+            >
+              Sell
+            </motion.button>
+          </div>
+        </form>
+      </motion.div>
+    ) : (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+        <div className="text-center flex">
+          <Card className="justify-start flex transition-all duration-500 transform hover:scale-105">
+            <div className="text-left text-lg">
+              <div>{balance}</div>
+              <div className="text-sm mt-1">Total Portfolio</div>
             </div>
-              
-            )}
+          </Card>
+          <Card className="flex justify-end transition-all duration-500 transform hover:scale-105">
+            <div className="text-left text-sm">
+              <div>Available Margin: {balance}</div>
+              <div className="mt-3">Invested Margin: {(balance - 999999).toFixed(2)}</div>
+            </div>
           </Card>
         </div>
+
+        <Card className="flex flex-col transition-all duration-500 ease-in-out hover:shadow-lg">
+          <div className="overflow-y-auto max-h-100">
+            <ul>
+              {investments.length > 0 && (
+                <motion.li initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-3 flex justify-between border-b font-bold">
+                  <span>Stock</span>
+                  <span>Shares</span>
+                  <span>Buy Amount</span>
+                  <span>Profit/Loss</span>
+                  <span>Action</span>
+                </motion.li>
+              )}
+
+              {investments.length > 0 ? (
+                investments.map((inv, index) => (
+                  <motion.li
+                    key={index}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="p-3 flex justify-between border-b items-center"
+                  >
+                    <span className="font-medium">{inv.stockSymbol}</span>
+                    <span>{inv.quantity} shares</span>
+                    <span>{inv.totalBuy.toFixed(2)}</span>
+                    <span className={inv.profitOrLoss >= 0 ? "text-green-500" : "text-red-500"}>
+                      {inv.profitOrLoss}
+                    </span>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      className="bg-red-500 text-white px-4 py-1 rounded shadow-md hover:bg-red-600"
+                      onClick={() => handleSell(inv.stockSymbol, inv.quantity)}
+                    >
+                      Sell
+                    </motion.button>
+                  </motion.li>
+                ))
+              ) : (
+                <li className="p-3 text-gray-500">No investments yet</li>
+              )}
+            </ul>
+          </div>
+        </Card>
+
+                          {/* Profit & Loss Cards */}
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <div className="p-4 bg-green-100 border-l-4 border-green-500 shadow-md rounded-lg text-center">
+                <h2 className="text-2xl font-bold text-green-700">₹{totalProfit}</h2>
+                <p className="text-gray-600">Total Profit</p>
+              </div>
+              <div className="p-4 bg-red-100 border-l-4 border-red-500 shadow-md rounded-lg text-center">
+                <h2 className="text-2xl font-bold text-red-700">₹{totalLoss}</h2>
+                <p className="text-gray-600">Total Loss</p>
+              </div>
+            </div>
+      </motion.div>
+    )}
+  </Card>
+</div>
 
 
                   
         {/* Second Card (Right) */}
-        <div className="flex justify-end items-center">
-          <Card className="bg-gray-300 p-6 rounded-lg shadow-md w-4/5">
-            {selectedCompany ? (
-              // Show the details of the selected company
-              <div>
-                <h2 className="font-bold text-lg">{selectedCompany} Details</h2>
-                {comDetails ? (
-                  <ul className="mt-4 space-y-2">
-                    <li><strong><span>Symbol:</span></strong><span>{comDetails.Symbol}</span></li><hr></hr>
-                    <li><strong>Asset Type:</strong> {comDetails.AssetType}</li><hr></hr>
-                    <li><strong>Name:</strong> {comDetails.Name}</li><hr></hr>
-                    <li><strong>Description:</strong> {comDetails.Description}</li><hr></hr>
-                  </ul>
-                ) : (
-                  <p>Loading details...</p>
-                )}
-              </div>
-            ) : (
-              // Show company list if no company is selected
-              <ul>
-                {companies.map((company, index) => (
-                  <li
-                    key={index}
-                    className="p-4 cursor-pointer hover:bg-gray-400 transition"
-                    onClick={() => setSelectedCompany(company)}
-                  >
-                    {company}
-                    {index !== companies.length - 1 && <hr />}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </div>
+        <Card className="p-6 rounded-2xl shadow-lg bg-gray-700 text-white">
+  {selectedCompany ? (
+    <div>
+      <h2 className="text-xl font-semibold mb-4">{selectedCompany} Details</h2>
+      {comDetails ? (
+        <ul className="space-y-3 border border-gray-500 p-4 rounded-lg">
+          <li className="p-2 border-b border-gray-600">
+            <strong>Symbol:</strong> {comDetails.Symbol}
+          </li>
+          <li className="p-2 border-b border-gray-600">
+            <strong>Asset Type:</strong> {comDetails.AssetType}
+          </li>
+          <li className="p-2 border-b border-gray-600">
+            <strong>Name:</strong> {comDetails.Name}
+          </li>
+          <li className="p-2">
+            <strong>Description:</strong> {comDetails.Description}
+          </li>
+        </ul>
+      ) : (
+        <p className="text-gray-300">Loading details...</p>
+      )}
+      <button
+        className="mt-4 bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all duration-300"
+        onClick={() => setSelectedCompany(null)}
+      >
+        Back to List
+      </button>
+    </div>
+  ) : (
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Select a Company</h2>
+      <ul className="grid grid-cols-2 gap-4">
+  {companies.map((company, index) => (
+    <li
+      key={index}
+      className={`p-4 cursor-pointer rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center text-center
+        ${selectedCompany === company ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-900 hover:bg-gray-300"}
+      `}
+      onClick={() => setSelectedCompany(company)}
+    >
+      {company}
+    </li>
+  ))}
+</ul>
+
+    </div>
+  )}
+</Card>
+
       </div>
         
     </>

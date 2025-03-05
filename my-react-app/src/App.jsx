@@ -58,7 +58,7 @@ const App = () => {
               )
             }
           />
-           <Route path="/portfolio" element={<div><ThemeContext.Provider value={{darkMode,setDarkMode}}><Portfolio/> </ThemeContext.Provider></div>}></Route>
+           <Route path="/portfolio" element={<div className="portfolio"><ThemeContext.Provider value={{darkMode,setDarkMode}}><Portfolio/> </ThemeContext.Provider></div>}></Route>
         </Routes>
       </div>
     </Router>

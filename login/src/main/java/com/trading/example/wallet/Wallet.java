@@ -45,4 +45,6 @@ public class Wallet {
     public void setBalance(double balance) {
         this.balance = balance;
     }
+
+
 }

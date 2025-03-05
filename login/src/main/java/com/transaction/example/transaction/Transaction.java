@@ -1,7 +1,10 @@
 package com.transaction.example.transaction;
 
 import com.login.example.login.entity.Registration;
+import com.trading.example.wallet.Wallet;
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,6 +17,10 @@ public class Transaction {
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private Registration user;
 
+    @ManyToOne
+    @JoinColumn(name="wallet_id", nullable = false)
+    private Wallet wallet;
+
     private String stockSymbol;
 
     @Enumerated(EnumType.STRING)
@@ -22,65 +29,35 @@ public class Transaction {
     private int quantity;
     private double price;
 
-    @Column(name = "total_amount", columnDefinition = "DECIMAL(10,2) GENERATED ALWAYS AS (quantity * price) STORED")
-    private double totalAmount;
+    @Column(name = "total_amount", nullable = false)
+    private BigDecimal totalAmount;
 
-    private LocalDateTime transactionDate = LocalDateTime.now();
+    private LocalDateTime transactionDate;
 
-    public Long getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(Long transactionId) {
-        this.transactionId = transactionId;
-    }
-
-    public Registration getUser() {
-        return user;
-    }
-
-    public void setUser(Registration user) {
+    public Transaction(Registration user, Wallet wallet, String stockSymbol, OrderType orderType, int quantity, double price) {
         this.user = user;
-    }
-
-    public String getStockSymbol() {
-        return stockSymbol;
-    }
-
-    public void setStockSymbol(String stockSymbol) {
+        this.wallet = wallet;
         this.stockSymbol = stockSymbol;
-    }
-
-    public OrderType getOrderType() {
-        return orderType;
-    }
-
-    public void setOrderType(OrderType orderType) {
         this.orderType = orderType;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
         this.quantity = quantity;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
         this.price = price;
+        this.totalAmount = BigDecimal.valueOf(quantity * price);
+        this.transactionDate = LocalDateTime.now();
     }
 
-    public double getTotalAmount() {
-        return totalAmount;
+    public Transaction() {
+
     }
 
-    public LocalDateTime getTransactionDate() {
-        return transactionDate;
-    }
+    public Long getTransactionId() { return transactionId; }
+    public Registration getUser() { return user; }
+    public Wallet getWallet() { return wallet; }
+    public String getStockSymbol() { return stockSymbol; }
+    public OrderType getOrderType() { return orderType; }
+    public int getQuantity() { return quantity; }
+    public double getPrice() { return price; }
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public LocalDateTime getTransactionDate() { return transactionDate; }
 }
+
 

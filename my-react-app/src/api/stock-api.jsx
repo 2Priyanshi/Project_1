@@ -1,8 +1,6 @@
 
-
-/* XL0FGKKAN8UFKKSK */
-/* FK8ZIFTUTQ7VFMCO */
-
+const basePath ="https://finnhub.io/api/v1"/*https://www.alphavantage.co";*/
+/* XL0FGKKAN8UFKKSK FK8ZIFTUTQ7VFMCO AB65111WMP1GXUO6*/ 
 
 
 export const searchSymbols = async (query) =>{
@@ -10,7 +8,7 @@ export const searchSymbols = async (query) =>{
 
 
     const url = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${query}&apikey=VI40KQQPZVS71Z6G`;
- eb02068fec3fb64cb20b126b3b6015a6d950e854
+
 
     const response = await fetch(url);
     if(!response.ok)

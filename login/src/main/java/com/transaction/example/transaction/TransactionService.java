@@ -1,16 +1,20 @@
 package com.transaction.example.transaction;
 
 import com.login.example.login.entity.Registration;
+import com.login.example.login.repository.RegistrationRepository;
 import com.trading.example.wallet.Wallet;
 import com.trading.example.wallet.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TransactionService {
+
     @Autowired
     private TransactionRepository transactionRepository;
 
@@ -18,39 +22,54 @@ public class TransactionService {
     private WalletRepository walletRepository;
 
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository, WalletRepository walletRepository) {
-        this.transactionRepository = transactionRepository;
-        this.walletRepository = walletRepository;
-    }
+    private RegistrationRepository registrationRepository;
 
-
-
-    @Transactional
-    public String executeTransaction(Transaction transaction) {
-        Registration user = transaction.getUser();
-        if(user == null) {
-            throw new RuntimeException("User not found");
-        }
+    public Transaction createTransaction(Long userId, String stockSymbol, int quantity, double price, OrderType orderType) {
+        Registration user = registrationRepository.findById(userId).orElse(null);
         Wallet wallet = walletRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Wallet not found"));
 
-        double transactionAmount = transaction.getQuantity() * transaction.getPrice();
+        if (user == null || wallet == null) return null;
 
-        if (transaction.getOrderType().name().equals("BUY")) {
-            if (wallet.getBalance() < transactionAmount) {
-                return "Insufficient balance!";
+        if (quantity <= 0) {
+            throw new RuntimeException("Quantity must be greater than zero");
+        }
+
+        if (price <= 0) {
+            throw new RuntimeException("Invalid stock price");
+        }
+
+        BigDecimal totalAmount = BigDecimal.valueOf(quantity * price);
+
+        if (orderType == OrderType.BUY) {
+            if (wallet.getBalance() < totalAmount.doubleValue()) {
+                throw new RuntimeException("Insufficient balance");
             }
-            wallet.setBalance(wallet.getBalance() - transactionAmount);
+            wallet.setBalance(wallet.getBalance() - totalAmount.doubleValue());
         } else {
-            wallet.setBalance(wallet.getBalance() + transactionAmount);
+            // **Check if the user owns enough stocks before selling**
+            int ownedShares = transactionRepository.getOwnedShares(userId, stockSymbol);
+            if (quantity > ownedShares) {
+                throw new RuntimeException("Insufficient shares to sell");
+            }
+            wallet.setBalance(wallet.getBalance() + totalAmount.doubleValue());
         }
 
         walletRepository.save(wallet);
-        transactionRepository.save(transaction);
-        return "Transaction successful!";
+
+        Transaction transaction = new Transaction(user, wallet, stockSymbol, orderType, quantity, price);
+        return transactionRepository.save(transaction);
     }
 
-    public List<Transaction> getUserTransactions(Long userId) {
-        return transactionRepository.findByUserId(userId);
+    public List<Transaction> getTransactions(Long userId) {
+        Optional<Registration> userOpt = registrationRepository.findById(userId);
+        if (userOpt.isEmpty()) return List.of();
+
+        Optional<Wallet> walletOpt = walletRepository.findByUser(userOpt.get());
+        return walletOpt.map(transactionRepository::findByWallet).orElse(List.of());
     }
+
 }
+
+
+
