@@ -2,6 +2,7 @@ package com.transaction.example.transaction;
 
 import com.login.example.login.entity.Registration;
 import com.login.example.login.repository.RegistrationRepository;
+import com.portfolio.example.portfolio.PortfolioService;
 import com.trading.example.wallet.Wallet;
 import com.trading.example.wallet.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,10 @@ public class TransactionService {
 
     @Autowired
     private RegistrationRepository registrationRepository;
+
+
+    @Autowired
+    private PortfolioService portfolioService;
 
     public Transaction createTransaction(Long userId, String stockSymbol, int quantity, double price, OrderType orderType) {
         Registration user = registrationRepository.findById(userId).orElse(null);
@@ -58,16 +63,22 @@ public class TransactionService {
         walletRepository.save(wallet);
 
         Transaction transaction = new Transaction(user, wallet, stockSymbol, orderType, quantity, price);
-        return transactionRepository.save(transaction);
+        Transaction savedTransaction=transactionRepository.save(transaction);
+
+
+        portfolioService.updatePortfolio(savedTransaction);
+        return savedTransaction;
+
     }
 
     public List<Transaction> getTransactions(Long userId) {
         Optional<Registration> userOpt = registrationRepository.findById(userId);
         if (userOpt.isEmpty()) return List.of();
 
+
         Optional<Wallet> walletOpt = walletRepository.findByUser(userOpt.get());
         return walletOpt.map(transactionRepository::findByWallet).orElse(List.of());
-    }
+   }
 
 }
 

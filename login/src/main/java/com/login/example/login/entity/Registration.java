@@ -1,6 +1,10 @@
 package com.login.example.login.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import org.springframework.lang.NonNull;
 
 @Entity
 
@@ -10,7 +14,16 @@ public class Registration {
     private Long id;
 
     private String name;
+
+    @Email(message="Email shoud be valid")
+    @NotBlank(message = "Email is required")
     private String email;
+
+    @NotBlank(message = "Password is required")
+    @Pattern(
+            regexp = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).{8,}$",
+            message = "Password must be at least 8 characters long, contain a letter, a number, and a special character"
+    )
     private String password;
 
     // Getters and Setters
