@@ -5,6 +5,10 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { fetchStockDetails, fetchQuote } from '../api/stock-api';
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeftCircleIcon } from "@heroicons/react/24/solid";
+import Search from './Search';
+import MultipleCharts from './MultipleCharts';
 
 
 function Portfolio() {
@@ -20,6 +24,7 @@ function Portfolio() {
   const [totalProfit, setTotalProfit] = useState(0);
   const [totalLoss, setTotalLoss] = useState(0);
   const [pendingTrade, setPendingTrade] = useState(null);
+  const navigate = useNavigate();
 
   const data = [
     { name: "Profit", value: totalProfit, color: "#4CAF50" }, // Green for Profit
@@ -151,9 +156,15 @@ const handleTrade = async (action, stockSymbol, qty) => {
           groupedInvestments[stockSymbol].totalBuy += parseFloat(totalAmount);
           groupedInvestments[stockSymbol].quantity += quantity;
         } else if (orderType === "SELL") {
-          groupedInvestments[stockSymbol].totalBuy -= parseFloat(totalAmount);
           groupedInvestments[stockSymbol].quantity -= quantity;
+          if (groupedInvestments[stockSymbol].quantity > 0) {
+            const avgPrice = groupedInvestments[stockSymbol].totalBuy / (groupedInvestments[stockSymbol].quantity + quantity);
+            groupedInvestments[stockSymbol].totalBuy = avgPrice * groupedInvestments[stockSymbol].quantity;
+          } else {
+            groupedInvestments[stockSymbol].totalBuy = 0;
+          }
         }
+        
       }
   
       // Convert grouped object into an array
@@ -226,21 +237,31 @@ useEffect(() => {
 
   return (
     <>
+        
+  
+      
+    
+
       <div
         className={`h-screen w-screen grid grid-cols-2 gap-2 p-3 font-quicksand ${
-          darkMode ? "bg-gray-900 text-gray-100" : "bg-neutral-100"
+          darkMode ? "bg-gray-900 text-gray-100" : "bg-gradient-to-r from-[#c9d6ff] to-[#fff]"
         }`}
       >
         {/* First Card (Left) */}
-        <div className={`flex justify-start items-center transition-all duration-500 ease-in-out ${darkMode ? "bg-gray-900 text-gray-100" : "bg-neutral-100"}`}>
-  <Card className={`bg-gray-200 p-6 rounded-lg shadow-md w-4/5 transition-all duration-500 ease-in-out transform hover:scale-[1.02] ${darkMode ? "bg-gray-900 text-gray-100" : "bg-neutral-100"}`}>
+        
+        <div className={`flex justify-start items-center transition-all duration-500 ease-in-out ${darkMode ? "bg-gray-900 text-gray-100" : "null"}`}>
+  <Card className={`bg-gray-200  p-6 rounded-lg shadow-md w-4/5 transition-all duration-500 ease-in-out transform hover:scale-[1.02] ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white/40 backdrop-blur-lg border border-white/30"}`}>
+  
+    
+    
     {selectedCompany ? (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <h2 className="font-bold text-lg">{selectedCompany}</h2>
-        <form className="mt-4 space-y-3">
+        <div className={`mt-4 space-y-3 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white/40 backdrop-blur-lg border border-white/30"}`}>
+        <form className={`mt-4 space-y-3 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white/40 backdrop-blur-lg border border-white/30"}`}>
           
           {/* Quantity Row */}
-          <div className="flex items-center gap-4">
+          <div className={`flex items-center gap-4 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-neutral-100"}`}>
             <label className="w-40 font-medium">Quantity:</label>
             <input
               type="number"
@@ -298,67 +319,94 @@ useEffect(() => {
             </motion.button>
           </div>
         </form>
+        <div className={``}>
+           <MultipleCharts stocks={["AAPL", "TSLA", "MSFT", "GOOGL"]}/>
+        </div>
+        </div>
       </motion.div>
+ 
+      
+
     ) : (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
         <div className="text-center flex">
-          <Card className="justify-start flex transition-all duration-500 transform hover:scale-105">
-            <div className="text-left text-lg">
-              <div>{balance}</div>
-              <div className="text-sm mt-1">Total Portfolio</div>
-            </div>
-          </Card>
-          <Card className="flex justify-end transition-all duration-500 transform hover:scale-105">
-            <div className="text-left text-sm">
-              <div>Available Margin: {balance}</div>
-              <div className="mt-3">Invested Margin: {(balance - 999999).toFixed(2)}</div>
-            </div>
-          </Card>
-        </div>
+  <Card className="justify-start flex transition-all duration-500 transform hover:scale-105 bg-white p-4 rounded-lg">
+    <motion.div 
+      initial={{ opacity: 0, y: -10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.5 }}
+      className="text-left text-lg font-semibold"
+    >
+      <div className="text-2xl font-bold">{Number(balance).toFixed(2)}</div>
+      <div className="text-md mt-1 text-gray-600 ">Total Portfolio</div>
+    </motion.div>
+  </Card>
+
+  <Card className="flex mt-4 justify-end transition-all duration-500 transform hover:scale-105 shadow-lg bg-white p-4 rounded-lg">
+    <motion.div 
+      initial={{ opacity: 0, y: -10 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.5, delay: 0.2 }}
+      className="text-left text-sm font-medium text-gray-800"
+    >
+      <div className="text-lg font-semibold">Available Margin: <span className="font-bold">{Number(balance).toFixed(2)}</span></div>
+      <div className="mt-3 text-gray-600 ">Invested Margin: <span className="font-semibold">{(balance - 999999).toFixed(2)}</span></div>
+    </motion.div>
+  </Card>
+</div>
+
 
         <Card className="flex flex-col transition-all duration-500 ease-in-out hover:shadow-lg">
-          <div className="overflow-y-auto max-h-100">
-            <ul>
-              {investments.length > 0 && (
-                <motion.li initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-3 flex justify-between border-b font-bold">
-                  <span>Stock</span>
-                  <span>Shares</span>
-                  <span>Buy Amount</span>
-                  <span>Profit/Loss</span>
-                  <span>Action</span>
-                </motion.li>
-              )}
+  <div className="overflow-y-auto max-h-100">
+    <ul>
+      {investments.length > 0 && (
+        <motion.li 
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }} 
+          className="p-3 grid grid-cols-5 font-bold border-b"
+        >
+          <span className="text-left">Stock</span>
+          <span className="text-center">Shares</span>
+          <span className="text-right">Buy/Sell</span>
+          <span className="text-right">Profit/Loss</span>
+          <span className="text-center">Action</span>
+        </motion.li>
+      )}
 
-              {investments.length > 0 ? (
-                investments.map((inv, index) => (
-                  <motion.li
-                    key={index}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="p-3 flex justify-between border-b items-center"
-                  >
-                    <span className="font-medium">{inv.stockSymbol}</span>
-                    <span>{inv.quantity} shares</span>
-                    <span>{inv.totalBuy.toFixed(2)}</span>
-                    <span className={inv.profitOrLoss >= 0 ? "text-green-500" : "text-red-500"}>
-                      {inv.profitOrLoss}
-                    </span>
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      className="bg-red-500 text-white px-4 py-1 rounded shadow-md hover:bg-red-600"
-                      onClick={() => handleSell(inv.stockSymbol, inv.quantity)}
-                    >
-                      Sell
-                    </motion.button>
-                  </motion.li>
-                ))
-              ) : (
-                <li className="p-3 text-gray-500">No investments yet</li>
-              )}
-            </ul>
-          </div>
-        </Card>
+      {investments.length > 0 ? (
+        investments.map((inv, index) => (
+          <motion.li
+            key={index}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="p-3 grid grid-cols-5 border-b items-center"
+          >
+            <span className="text-left font-medium">{inv.stockSymbol}</span>
+            <span className="text-center">{inv.quantity} shares</span>
+            <span className="text-right">{inv.totalBuy.toFixed(2)}</span>
+            <span className={`text-right ${inv.profitOrLoss >= 0 ? "text-green-500" : "text-red-500"}`}>
+  {typeof inv.profitOrLoss === "number" ? inv.profitOrLoss.toFixed(2) : "0.00"}
+</span>
+<div className='flex justify-center'>
+{/*inv.totalBuy.toFixed(2)*/}
+<motion.button
+  whileTap={{ scale: 0.9 }}
+  className="bg-red-500 text-white text-sm rounded shadow-md hover:bg-red-600 w-16"
+  onClick={() => handleSell(inv.stockSymbol, inv.quantity)}
+>
+  Sell
+</motion.button>
+</div>
+          </motion.li>
+        ))
+      ) : (
+        <li className="p-3 text-gray-500 text-center">No investments yet</li>
+      )}
+    </ul>
+  </div>
+</Card>
+
 
                           {/* Profit & Loss Cards */}
             <div className="grid grid-cols-2 gap-4 mt-6">
@@ -379,9 +427,19 @@ useEffect(() => {
 
                   
         {/* Second Card (Right) */}
-        <Card className="p-6 rounded-2xl shadow-lg bg-gray-700 text-white">
+        <Card className="p-6 rounded-2xl shadow-lg bg-gray-700 text-white ">
+        <motion.button
+      className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-2xl shadow-md hover:bg-blue-600 transition-all absolute right-4 top-3"
+      onClick={() => navigate("/dashboard")}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      <ArrowLeftCircleIcon className="w-6 h-6" />
+      
+    </motion.button>
   {selectedCompany ? (
     <div>
+     
       <h2 className="text-xl font-semibold mb-4">{selectedCompany} Details</h2>
       {comDetails ? (
         <ul className="space-y-3 border border-gray-500 p-4 rounded-lg">
@@ -411,12 +469,13 @@ useEffect(() => {
   ) : (
     <div>
       <h2 className="text-xl font-semibold mb-4">Select a Company</h2>
+      
       <ul className="grid grid-cols-2 gap-4">
   {companies.map((company, index) => (
     <li
       key={index}
-      className={`p-4 cursor-pointer rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center text-center
-        ${selectedCompany === company ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-900 hover:bg-gray-300"}
+      className={`p-4 cursor-pointer rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 border-gray-800 flex items-center justify-center text-center
+        ${selectedCompany === company ? "bg-blue-500 text-white " : "bg-white text-gray-900 hover:bg-gray-300"}
       `}
       onClick={() => setSelectedCompany(company)}
     >
@@ -430,6 +489,7 @@ useEffect(() => {
 </Card>
 
       </div>
+      
         
     </>
   );

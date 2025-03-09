@@ -4,7 +4,7 @@ const basePath ="https://finnhub.io/api/v1"/*https://www.alphavantage.co";*/
 export const searchSymbols = async (query) =>{
     /*const url = `${basePath}/search?q=${query}&token=${import.meta.env.VITE_API_KEY}`;*/
 
-    const url = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${query}&apikey=AB65111WMP1GXUO6`;
+    const url = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${query}&apikey=XL0FGKKAN8UFKKSK`;
 
     const response = await fetch(url);
     if(!response.ok)
@@ -19,7 +19,7 @@ export const searchSymbols = async (query) =>{
 
 export const fetchStockDetails = async (stockSymbol)=>{
     /*const url = `${basePath}/stock/profile2?symbol=${stockSymbol}&token=${import.meta.env.VITE_API_KEY}`;*/
-    const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${stockSymbol}&apikey=AB65111WMP1GXUO6`;
+    const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${stockSymbol}&apikey=XL0FGKKAN8UFKKSK`;
     console.log(url);
     console.log(stockSymbol);
     const response = await fetch(url);
@@ -38,7 +38,7 @@ export const fetchStockDetails = async (stockSymbol)=>{
 
 export const fetchQuote = async (stockSymbol) => {
    /* const url = `${basePath}/quote?symbol=${stockSymbol}&token=${import.meta.env.VITE_API_KEY}`;*/
-   const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&apikey=AB65111WMP1GXUO6`
+   const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&apikey=XL0FGKKAN8UFKKSK`
 
     const response = await fetch(url);
 
@@ -74,7 +74,7 @@ export const fetchQuote = async (stockSymbol) => {
 
 export const fetchStockData = async (symbol) =>{
 
-    const response = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${symbol}&apikey=AB65111WMP1GXUO6`);
+    const response = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${symbol}&apikey=XL0FGKKAN8UFKKSK`);
     const data = await response.json();
     return data;
 }
