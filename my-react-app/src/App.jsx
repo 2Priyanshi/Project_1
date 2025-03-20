@@ -49,7 +49,9 @@ const App = () => {
                     </ThemeContext.Provider>
                    
                   </div>
+                  <div className="footer">
                   <Footer />
+                  </div>
                 </div>
               ) : (
                 <Navigate to="/" />

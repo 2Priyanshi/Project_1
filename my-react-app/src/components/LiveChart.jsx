@@ -37,11 +37,15 @@ const LiveChart = React.memo(({ symbol }) => {
 
     return (
         <Card>
+            <div className="w-full h-[400px]"> {/* Adjust height */}
             <ReactApexChart 
                 series={[{ data: seriesData }]}
                 options={chartOptions}
                 type="candlestick"
+                height="100%" // Ensure it takes full height
+                width="100%"  // Ensure it takes full width
             />
+        </div>
         </Card>
     );
 });
