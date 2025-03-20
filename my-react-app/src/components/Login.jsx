@@ -221,7 +221,7 @@
 // export default Login;
 //------------------------------------------------------------------------
 
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Updated import
 import "./Login.css";
@@ -234,6 +234,7 @@ const Login = ({ onLogin }) => {
     email: "",
     password: "",
   });
+  
   const [message, setMessage] = useState("");
   const navigate = useNavigate(); // Updated from useHistory to useNavigate
 
@@ -242,6 +243,11 @@ const Login = ({ onLogin }) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
+//   useEffect(() => {
+//     console.log("Updated message:", message);
+// }, [message]);
+
 
   // Handle registration
   const handleRegisterSubmit = async (e) => {
@@ -252,10 +258,10 @@ const Login = ({ onLogin }) => {
         email: formData.email,
         password: formData.password,
       });
-      setMessage(response.data);
+      setMessage(response.data.message);
       setIsActive(false); // Switch to login form after successful registration
     } catch (error) {
-      setMessage(error.response?.data || "Registration failed.");
+      setMessage(error.response?.data?.message || "Registration failed.");
     }
   };
 
@@ -267,16 +273,18 @@ const Login = ({ onLogin }) => {
             email: formData.email,
             password: formData.password,
         });
+        console.log("Login Response:", response.data);
 
         if (response.status === 200) {
             localStorage.setItem("userId", response.data.userId); 
             alert("Login successful!");
             setMessage(response.data.message);
+            
             onLogin(); 
             navigate("/dashboard"); 
         }
-    } catch (error) {
-        setMessage(error.response?.data || "Login failed.");
+    } catch (error) { 
+        setMessage(error.response?.data?.message || "Login failed.");
     }
 };
 
@@ -372,12 +380,15 @@ const Login = ({ onLogin }) => {
             <button onClick={handleRegisterClick}>
               Sign Up
             </button>
+          
           </div>
+          {message && <div style={{ color: "red", fontSize: "14px", marginTop: "10px" , padding: "5px",textAlign: "center" }}>{message}</div>}
         </div>
       </div>
 
       {/* Display message */}
-      {message && <p className="message">{message}</p>}
+      
+
     </div>
   );
 };

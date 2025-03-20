@@ -340,7 +340,7 @@ useEffect(() => {
                   >
                     <span className="font-medium">{inv.stockSymbol}</span>
                     <span>{inv.quantity} shares</span>
-                    <span>{inv.totalBuy.toFixed(2)}</span>
+                    <span>{inv.marketValue}</span>
                     <span className={inv.profitOrLoss >= 0 ? "text-green-500" : "text-red-500"}>
                       {inv.profitOrLoss}
                     </span>

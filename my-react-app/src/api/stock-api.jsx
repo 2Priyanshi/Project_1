@@ -1,5 +1,4 @@
-
-const basePath ="https://finnhub.io/api/v1"/*https://www.alphavantage.co";*/
+const basePath ="https://finnhub.io/api/v1";/*https://www.alphavantage.co";*/
 /* XL0FGKKAN8UFKKSK FK8ZIFTUTQ7VFMCO AB65111WMP1GXUO6*/ 
 
 
