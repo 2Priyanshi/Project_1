@@ -249,7 +249,8 @@ useEffect(() => {
       >
         {/* First Card (Left) */}
         
-        <div className={`flex justify-start items-center transition-all duration-500 ease-in-out ${darkMode ? "bg-gray-900 text-gray-100" : "null"}`}>
+        
+        <div className={`flex justify-start items-center transition-all duration-500 ease-in-out ${darkMode ? "bg-gray-900 text-gray-100" : ""}`}>
   <Card className={`bg-gray-200  p-6 rounded-lg shadow-md w-4/5 transition-all duration-500 ease-in-out transform hover:scale-[1.02] ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white/40 backdrop-blur-lg border border-white/30"}`}>
   
     
@@ -257,11 +258,12 @@ useEffect(() => {
     {selectedCompany ? (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <h2 className="font-bold text-lg">{selectedCompany}</h2>
+        
         <div className={`mt-4 space-y-3 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white/40 backdrop-blur-lg border border-white/30"}`}>
-        <form className={`mt-4 space-y-3 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white/40 backdrop-blur-lg border border-white/30"}`}>
+          <form className={`mt-1 space-y-3 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white/40 backdrop-blur-lg border border-white/30"}`}>
           
           {/* Quantity Row */}
-          <div className={`flex items-center gap-4 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-neutral-100"}`}>
+          <div className={`flex items-center gap-4`}>
             <label className="w-40 font-medium">Quantity:</label>
             <input
               type="number"
@@ -319,9 +321,11 @@ useEffect(() => {
             </motion.button>
           </div>
         </form>
-        <div className={``}>
-           <MultipleCharts stocks={["AAPL", "TSLA", "MSFT", "GOOGL"]}/>
+        <Card>
+        <div className='m-1'>
+           <MultipleCharts stocks={["AAPL", "META", "IBM", "GOOGL"]}/>
         </div>
+        </Card>
         </div>
       </motion.div>
  
@@ -329,7 +333,7 @@ useEffect(() => {
 
     ) : (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-        <div className="text-center flex">
+        <div className="text-center flex m-2">
   <Card className="justify-start flex transition-all duration-500 transform hover:scale-105 bg-white p-4 rounded-lg">
     <motion.div 
       initial={{ opacity: 0, y: -10 }} 
@@ -337,8 +341,11 @@ useEffect(() => {
       transition={{ duration: 0.5 }}
       className="text-left text-lg font-semibold"
     >
-      <div className="text-2xl font-bold">{Number(balance).toFixed(2)}</div>
-      <div className="text-md mt-1 text-gray-600 ">Total Portfolio</div>
+
+      
+      <div className="text-2xl font-bold ">{Number(balance).toFixed(2)}</div>
+      <div className="text-md text-gray-600 ">Total Portfolio</div>
+      
     </motion.div>
   </Card>
 
@@ -350,7 +357,7 @@ useEffect(() => {
       className="text-left text-sm font-medium text-gray-800"
     >
       <div className="text-lg font-semibold">Available Margin: <span className="font-bold">{Number(balance).toFixed(2)}</span></div>
-      <div className="mt-3 text-gray-600 ">Invested Margin: <span className="font-semibold">{(balance - 999999).toFixed(2)}</span></div>
+      <div className="mt-3 text-gray-600 ">Invested Margin: <span className="font-semibold">{(999999 - (balance)).toFixed(2)}</span></div>
     </motion.div>
   </Card>
 </div>
@@ -438,10 +445,11 @@ useEffect(() => {
       
     </motion.button>
   {selectedCompany ? (
+    <Card>
     <div>
      
       <h2 className="text-xl font-semibold mb-4">{selectedCompany} Details</h2>
-      {comDetails ? (
+     {/*} {comDetails ? (
         <ul className="space-y-3 border border-gray-500 p-4 rounded-lg">
           <li className="p-2 border-b border-gray-600">
             <strong>Symbol:</strong> {comDetails.Symbol}
@@ -458,7 +466,7 @@ useEffect(() => {
         </ul>
       ) : (
         <p className="text-gray-300">Loading details...</p>
-      )}
+      )}*/}
       <button
         className="mt-4 bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all duration-300"
         onClick={() => setSelectedCompany(null)}
@@ -466,6 +474,7 @@ useEffect(() => {
         Back to List
       </button>
     </div>
+    </Card>
   ) : (
     <div>
       <h2 className="text-xl font-semibold mb-4">Select a Company</h2>

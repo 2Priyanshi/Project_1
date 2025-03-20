@@ -377,7 +377,7 @@ const Login = ({ onLogin }) => {
       </div>
 
       {/* Display message */}
-      {message && <p className="message">{message}</p>}
+     
     </div>
   );
 };

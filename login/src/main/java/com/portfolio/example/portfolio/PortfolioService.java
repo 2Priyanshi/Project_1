@@ -46,11 +46,11 @@ public class PortfolioService {
             BigDecimal currentValue = marketPrice.multiply(BigDecimal.valueOf(portfolio.getQuantity()));
 
             if (currentValue.compareTo(totalCost) > 0) {
-                portfolio.setProfitLossStatus(Portfolio.ProfitLossStatus.PROFIT);
+                portfolio.setProfitLossStatus(Portfolio.ProfitLossStatus.Profit);
             } else if (currentValue.compareTo(totalCost) < 0) {
-                portfolio.setProfitLossStatus(Portfolio.ProfitLossStatus.LOSS);
+                portfolio.setProfitLossStatus(Portfolio.ProfitLossStatus.Loss);
             } else {
-                portfolio.setProfitLossStatus(Portfolio.ProfitLossStatus.NO_CHANGE);
+                portfolio.setProfitLossStatus(Portfolio.ProfitLossStatus.No_Change);
             }
 
             portfolioRepository.save(portfolio);

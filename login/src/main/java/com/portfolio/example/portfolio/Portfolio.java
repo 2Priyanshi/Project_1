@@ -90,7 +90,21 @@ public class Portfolio {
     }
 
     public enum ProfitLossStatus{
-        PROFIT, LOSS, NO_CHANGE, PENDING
+        Profit, Loss, No_Change("No Change"), Pending;
+        private final String value;
+
+        ProfitLossStatus() {
+            this.value = this.name();
+        }
+
+        ProfitLossStatus(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
     }
 
     public Portfolio() {}
@@ -100,7 +114,7 @@ public class Portfolio {
         this.quantity = quantity;
         this.avgPrice = avgPrice;
         this.totalValue = avgPrice.multiply(BigDecimal.valueOf(quantity));
-        this.profitLossStatus = ProfitLossStatus.PENDING;
+        this.profitLossStatus = ProfitLossStatus.Pending;
     }
 }
 
