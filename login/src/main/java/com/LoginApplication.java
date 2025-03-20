@@ -8,7 +8,8 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages = {
 		"com.login.example.login",
 		"com.trading.example.wallet",
-		"com.transaction.example.transaction"
+		"com.transaction.example.transaction",
+		"com.portfolio.example.portfolio"
 })
 public class LoginApplication {
 

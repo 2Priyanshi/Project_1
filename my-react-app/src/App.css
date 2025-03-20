@@ -31,7 +31,7 @@ html, body, #root, .container {
    /* display: inline-flex;*/
     align-items: center;
     justify-content: center;
-    padding: 8px 4px;
+    padding: 6px 4px;
     margin: 1px;
     border-radius: 4px;
    /* background-color: #512da8;*/
@@ -59,9 +59,9 @@ html, body, #root, .container {
     /* display: inline-flex;*/
      align-items: center;
      justify-content: center;
-     padding: 4px;
-     margin: 1px;
-     border-radius: 4px;
+     padding: 5px 5px;
+     margin: 3px;
+     border-radius: 5px;
     /* background-color: #512da8;*/
      /*color: #fff;*/
      transition: background-color 0.3s ease;
