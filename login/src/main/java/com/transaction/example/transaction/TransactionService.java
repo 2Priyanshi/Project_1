@@ -63,6 +63,8 @@ public class TransactionService {
         walletRepository.save(wallet);
 
         Transaction transaction = new Transaction(user, wallet, stockSymbol, orderType, quantity, price);
+        updateProfitLoss(transaction);
+
         Transaction savedTransaction=transactionRepository.save(transaction);
 
 
@@ -79,6 +81,28 @@ public class TransactionService {
         Optional<Wallet> walletOpt = walletRepository.findByUser(userOpt.get());
         return walletOpt.map(transactionRepository::findByWallet).orElse(List.of());
    }
+
+    private void updateProfitLoss(Transaction transaction) {
+        if (transaction.getOrderType() == OrderType.SELL) {
+            double averagePrice = transactionRepository.getAverageBuyPrice(transaction.getUser().getId(), transaction.getStockSymbol());
+            double profitLossValue = (transaction.getPrice() - averagePrice) * transaction.getQuantity();
+
+            transaction.setProfitLossValue(profitLossValue);
+
+            if (profitLossValue > 0) {
+                transaction.setProfitLossStatus("Profit");
+            } else if (profitLossValue < 0) {
+                transaction.setProfitLossStatus("Loss");
+            } else {
+                transaction.setProfitLossStatus("No Profit No Loss");
+            }
+        } else {
+            transaction.setProfitLossValue(0.0);
+            transaction.setProfitLossStatus("Pending");
+        }
+    }
+
+
 
 
 }
