@@ -387,12 +387,10 @@ const Login = ({ onLogin }) => {
       </div>
 
       {/* Display message */}
-<<<<<<< HEAD
+
       
 
-=======
-     
->>>>>>> a8d34a3c56f1652b8a9471a14f42b8176f9c5371
+
     </div>
   );
 };

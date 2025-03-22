@@ -1,12 +1,13 @@
 const basePath ="https://finnhub.io/api/v1";/*https://www.alphavantage.co";*/
-/* XL0FGKKAN8UFKKSK FK8ZIFTUTQ7VFMCO AB65111WMP1GXUO6*/ 
+/* XL0FGKKAN8UFKKSK FK8ZIFTUTQ7VFMCO AB65111WMP1GXUO6   VN0OTMC2TPEQMR44   D4YFDQCXJY4SW56N*/ 
 
 
 export const searchSymbols = async (query) =>{
     /*const url = `${basePath}/search?q=${query}&token=${import.meta.env.VITE_API_KEY}`;*/
 
 
-    const url = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${query}&apikey=FK8ZIFTUTQ7VFMCO`;
+    const url = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${query}&apikey=AGRXVFXDC5JM9ZGF`;
+
 
     const response = await fetch(url);
     if(!response.ok)
@@ -22,7 +23,11 @@ export const searchSymbols = async (query) =>{
 export const fetchStockDetails = async (stockSymbol)=>{
     /*const url = `${basePath}/stock/profile2?symbol=${stockSymbol}&token=${import.meta.env.VITE_API_KEY}`;*/
 
-    const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${stockSymbol}&apikey=FK8ZIFTUTQ7VFMCO`;    console.log(url);
+
+    
+    const url = `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${stockSymbol}&apikey=AGRXVFXDC5JM9ZGF`;
+    console.log(url);
+
     console.log(stockSymbol);
     const response = await fetch(url);
     
@@ -41,7 +46,8 @@ export const fetchStockDetails = async (stockSymbol)=>{
 export const fetchQuote = async (stockSymbol) => {
    /* const url = `${basePath}/quote?symbol=${stockSymbol}&token=${import.meta.env.VITE_API_KEY}`;*/
 
-   const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&apikey=FK8ZIFTUTQ7VFMCO`
+   const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&apikey=AGRXVFXDC5JM9ZGF`
+
 
 
     const response = await fetch(url);
@@ -79,7 +85,7 @@ export const fetchQuote = async (stockSymbol) => {
 export const fetchStockData = async (symbol) =>{
 
 
-    const response = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${symbol}&apikey=FK8ZIFTUTQ7VFMCO`);
+    const response = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=${symbol}&apikey=AGRXVFXDC5JM9ZGF`);
 
     const data = await response.json();
     return data;

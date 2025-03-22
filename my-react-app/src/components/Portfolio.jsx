@@ -24,7 +24,9 @@ function Portfolio() {
   const [totalProfit, setTotalProfit] = useState(0);
   const [totalLoss, setTotalLoss] = useState(0);
   const [pendingTrade, setPendingTrade] = useState(null);
+  const [transactions,setTransactions] = useState([]);
   const navigate = useNavigate();
+  
 
   const data = [
     { name: "Profit", value: totalProfit, color: "#4CAF50" }, // Green for Profit
@@ -55,6 +57,21 @@ function Portfolio() {
     }
   }, [selectedCompany]);
 
+  useEffect(() => {
+    if (userId) {
+      fetch(`http://localhost:8080/api/transactions/profit-loss/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+          setTransactions(data);
+          fetchInvestments();
+        })
+        .catch(error => console.error('Error fetching transactions:', error));
+    }
+  }, [userId]);
+  
+
+
+
   const companies = [
     "Nifty",
     "Tata Steel",
@@ -84,7 +101,7 @@ function Portfolio() {
 
       return price;
     } catch (error) {
-      console.error(`Error fetching stock price for ${selectedCompany}:`, error);
+      console.error(`Error fetching stock price for ${selectedCompany}:, error`);
       return null;
     }
   };
@@ -105,6 +122,7 @@ function Portfolio() {
     console.log(".....");
 
     const price = await fetchStockPrice();
+    
     if (!price) {
       alert("Transaction failed: Unable to fetch stock price.");
       return;
@@ -131,19 +149,25 @@ function Portfolio() {
 
   const fetchInvestments = async () => {
     if (!userId) return;
-
+  
     try {
+      // Ensure transactions are available before proceeding
+      if (transactions.length === 0) {
+        console.warn("Transactions not loaded yet. Waiting...");
+        return;
+      }
+  
       const response = await fetch(`http://localhost:8080/api/transactions/${userId}`);
       if (!response.ok) throw new Error("Failed to fetch investments");
-
+  
       const data = await response.json();
-
+  
       // Group investments by stock symbol
       const groupedInvestments = {};
-
+  
       for (const investment of data) {
-        const { stockSymbol, orderType, quantity, totalAmount, price } = investment;
-
+        const { stockSymbol, orderType, quantity, totalAmount } = investment;
+  
         if (!groupedInvestments[stockSymbol]) {
           groupedInvestments[stockSymbol] = {
             totalBuy: 0,
@@ -151,7 +175,7 @@ function Portfolio() {
             stockSymbol,
           };
         }
-
+  
         if (orderType === "BUY") {
           groupedInvestments[stockSymbol].totalBuy += parseFloat(totalAmount);
           groupedInvestments[stockSymbol].quantity += quantity;
@@ -164,33 +188,38 @@ function Portfolio() {
             groupedInvestments[stockSymbol].totalBuy = 0;
           }
         }
-
       }
-
-      // Convert grouped object into an array
+  
+      // Convert to array
       const investmentArray = Object.values(groupedInvestments);
-
-      // Fetch current stock prices
+  
+      // Fetch current stock prices and calculate profit/loss
       const updatedInvestments = await Promise.all(
         investmentArray.map(async (inv) => {
-          const stockData = await fetchStockDetails(inv.stockSymbol); // API call to get latest stock price
-          const currentPrice = parseFloat(stockData.Price) || 0; // Assume 0 if no price found
+          const stockData = await fetchStockDetails(inv.stockSymbol);
+          const currentPrice = parseFloat(stockData.Price) || 0;
           const marketValue = currentPrice * inv.quantity;
+  
+          const transactionData = transactions.find(t => t.stockSymbol === inv.stockSymbol);
+          const profitOrLoss = transactionData ? parseFloat(transactionData.profitLossValue) : 0;
+          console.log("Fetched Transactions:", transactions);
 
+  
           return {
             ...inv,
             currentPrice,
             marketValue,
-            profitOrLoss: (marketValue - inv.totalBuy).toFixed(2), // Profit/Loss formula
+            profitOrLoss,
           };
         })
       );
-
+  
       setInvestments(updatedInvestments);
     } catch (error) {
       console.error("Error fetching investments:", error);
     }
   };
+  
 
   useEffect(() => {
     let profit = 0;
@@ -212,7 +241,7 @@ function Portfolio() {
     if (userId) {
       fetchInvestments();
     }
-  }, [userId]); // Ensures it runs when `userId` is available
+  }, [userId]); // Ensures it runs when userId is available
 
 
 
@@ -231,10 +260,6 @@ function Portfolio() {
     }
   }, [selectedCompany]);
 
-
-
-
-
   return (
     <>
 
@@ -249,8 +274,8 @@ function Portfolio() {
         {/* First Card (Left) */}
 
 
-    <div className={`flex justify-start items-center transition-all duration-500 ease-in-out ${darkMode ? "bg-gray-900 text-gray-100" : ""}`}>
-      <Card className={`bg-gray-200  p-6 rounded-lg shadow-md w-4/5 transition-all duration-500 ease-in-out transform hover:scale-[1.02] ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white/40 backdrop-blur-lg border border-white/30"}`}>
+        <div className={`flex justify-start items-center transition-all duration-500 ease-in-out ${darkMode ? "bg-gray-900 text-gray-100" : "null"}`}>
+          <Card className={`bg-gray-200  p-6 rounded-lg shadow-md w-4/5 transition-all duration-500 ease-in-out transform hover:scale-[1.02] ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white/40 backdrop-blur-lg border border-white/30"}`}>
 
 
 
@@ -395,7 +420,7 @@ function Portfolio() {
                               {typeof inv.profitOrLoss === "number" ? inv.profitOrLoss.toFixed(2) : "0.00"}
                             </span>
                             <div className='flex justify-center'>
-                              {/*inv.totalBuy.toFixed(2)*/}
+                             
                               <motion.button
                                 whileTap={{ scale: 0.9 }}
                                 className="bg-red-500 text-white text-sm rounded shadow-md hover:bg-red-600 w-16"
@@ -414,130 +439,76 @@ function Portfolio() {
                 </Card>
 
 
-                {investments.length > 0 ? (
-                  investments.map((inv, index) => (
-                    <motion.li
-                      key={index}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="p-3 flex justify-between border-b items-center"
-                    >
-                      <span className="font-medium">{inv.stockSymbol}</span>
-                      <span>{inv.quantity} shares</span>
-                      <span>{inv.marketValue}</span>
-                      <span className={inv.profitOrLoss >= 0 ? "text-green-500" : "text-red-500"}>
-                        {inv.profitOrLoss}
-                      </span>
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        className="bg-red-500 text-white px-4 py-1 rounded shadow-md hover:bg-red-600"
-                        onClick={() => handleSell(inv.stockSymbol, inv.quantity)}
-                      >
-                        Sell
-                      </motion.button>
-                    </motion.li>
-                  ))
-                ) : (
-                  <li className="p-3 text-gray-500">No investments yet</li>
-                )}
-              </ul>
-          </div>
-      </Card>
-
-
-      {/* Profit & Loss Cards */}
-      <div className="grid grid-cols-2 gap-4 mt-6">
-        <div className="p-4 bg-green-100 border-l-4 border-green-500 shadow-md rounded-lg text-center">
-          <h2 className="text-2xl font-bold text-green-700">₹{totalProfit}</h2>
-          <p className="text-gray-600">Total Profit</p>
+                {/* Profit & Loss Cards */}
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                  <div className="p-4 bg-green-100 border-l-4 border-green-500 shadow-md rounded-lg text-center">
+                    <h2 className="text-2xl font-bold text-green-700">₹{totalProfit}</h2>
+                    <p className="text-gray-600">Total Profit</p>
+                  </div>
+                  <div className="p-4 bg-red-100 border-l-4 border-red-500 shadow-md rounded-lg text-center">
+                    <h2 className="text-2xl font-bold text-red-700">₹{totalLoss}</h2>
+                    <p className="text-gray-600">Total Loss</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </Card>
         </div>
-        <div className="p-4 bg-red-100 border-l-4 border-red-500 shadow-md rounded-lg text-center">
-          <h2 className="text-2xl font-bold text-red-700">₹{totalLoss}</h2>
-          <p className="text-gray-600">Total Loss</p>
-        </div>
-      </div>
-    </motion.div >
-    )
-}
-  </Card >
-</div >
 
+        {/* Second Card (Right) */}
+        <Card className="p-6 rounded-2xl shadow-lg bg-gray-700 text-white ">
+          <motion.button
+            className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-2xl shadow-md hover:bg-blue-600 transition-all absolute right-4 top-3"
+            onClick={() => navigate("/dashboard")}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <ArrowLeftCircleIcon className="w-6 h-6" />
 
+          </motion.button>
+          {selectedCompany ? (
+            <Card>
+              <div>
 
-  {/* Second Card (Right) */ }
-  < Card className = "p-6 rounded-2xl shadow-lg bg-gray-700 text-white " >
-    <motion.button
-      className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-2xl shadow-md hover:bg-blue-600 transition-all absolute right-4 top-3"
-      onClick={() => navigate("/dashboard")}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-    >
-      <ArrowLeftCircleIcon className="w-6 h-6" />
+                <h2 className="text-xl font-semibold mb-4">{selectedCompany} Details</h2>
+      
+                <button
+                  className="mt-4 bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all duration-300"
+                  onClick={() => setSelectedCompany(null)}
+                >
+                  Back to List
+                </button>
+              </div>
+            </Card>
+          ) : (
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Select a Company</h2>
 
-    </motion.button>
-{
-  selectedCompany ? (
-    <Card>
-      <div>
-
-        <h2 className="text-xl font-semibold mb-4">{selectedCompany} Details</h2>
-        {/*} {comDetails ? (
-        <ul className="space-y-3 border border-gray-500 p-4 rounded-lg">
-          <li className="p-2 border-b border-gray-600">
-            <strong>Symbol:</strong> {comDetails.Symbol}
-          </li>
-          <li className="p-2 border-b border-gray-600">
-            <strong>Asset Type:</strong> {comDetails.AssetType}
-          </li>
-          <li className="p-2 border-b border-gray-600">
-            <strong>Name:</strong> {comDetails.Name}
-          </li>
-          <li className="p-2">
-            <strong>Description:</strong> {comDetails.Description}
-          </li>
-        </ul>
-      ) : (
-        <p className="text-gray-300">Loading details...</p>
-      )}*/}
-        <button
-          className="mt-4 bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-all duration-300"
-          onClick={() => setSelectedCompany(null)}
-        >
-          Back to List
-        </button>
-      </div>
-    </Card>
-  ) : (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Select a Company</h2>
-
-      <ul className="grid grid-cols-2 gap-4">
-        {companies.map((company, index) => (
-          <li
-            key={index}
-            className={`p-4 cursor-pointer rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 border-gray-800 flex items-center justify-center text-center
+              <ul className="grid grid-cols-2 gap-4">
+                {companies.map((company, index) => ( 
+                  <li
+                    key={index}
+                    className={`p-4 cursor-pointer rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 border-gray-800 flex items-center justify-center text-center
         ${selectedCompany === company ? "bg-blue-500 text-white " : "bg-white text-gray-900 hover:bg-gray-300"}
       `}
-            onClick={() => setSelectedCompany(company)}
-          >
-            {company}
-          </li>
-        ))}
-      </ul>
+                    onClick={() => setSelectedCompany(company)}
+                  >
+                    {company}
+                  </li>
+                ))}
+              </ul>
 
-    </div>
-  )
-}
-</Card >
+            </div>
+          )}
+        </Card>
 
-      </div >
-      
-        
+      </div>
+
+
     </>
   );
-  
- 
+
+
 }
 
 export default Portfolio;
