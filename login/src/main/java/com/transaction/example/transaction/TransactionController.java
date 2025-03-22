@@ -48,7 +48,7 @@ public class TransactionController {
         List<Transaction> transactions=transactionService.getTransactions(userId);
         CSVWriter csvWriter=new CSVWriter(response.getWriter());
 
-        String[] header={"Transaction ID","Stock Symbol","Order TYpe","Quantity","Price","Total Amount","Date"};
+        String[] header={"Transaction ID","Stock Symbol","Order TYpe","Quantity","Price","Total Amount","Date","Profit_loss_value","Profit_loss_status"};
         csvWriter.writeNext(header);
 
         for(Transaction transaction:transactions){
@@ -59,10 +59,20 @@ public class TransactionController {
                     String.valueOf(transaction.getQuantity()),
                     String.valueOf(transaction.getPrice()),
                     transaction.getTotalAmount().toString(),
-                    transaction.getTransactionDate().toString()
+                    transaction.getTransactionDate().toString(),
+                    String.valueOf(transaction.getProfitLossValue()),
+                    transaction.getProfitLossStatus()
             };
             csvWriter.writeNext(data);
         }
         csvWriter.close();
     }
+
+    @GetMapping("/profit-loss/{userId}")
+    public ResponseEntity<List<Transaction>> getProfitLossData(@PathVariable Long userId) {
+        List<Transaction> transactions = transactionService.getTransactions(userId);
+        return ResponseEntity.ok(transactions);
+    }
+
+
 }

@@ -20,7 +20,12 @@ public class Portfolio {
     private int quantity;
     private BigDecimal avgPrice;
     private BigDecimal totalValue;
+
+    @Column(name = "market_price", precision = 10, scale = 2)
     private BigDecimal marketPrice;
+
+    @Column(name = "profit_loss_value", precision = 15, scale = 2)
+    private BigDecimal profitLossValue;
 
     @Enumerated(EnumType.STRING)
     private ProfitLossStatus profitLossStatus;
@@ -87,6 +92,14 @@ public class Portfolio {
 
     public void setProfitLossStatus(ProfitLossStatus profitLossStatus) {
         this.profitLossStatus = profitLossStatus;
+    }
+
+    public BigDecimal getProfitLossValue() {
+        return profitLossValue;
+    }
+
+    public void setProfitLossValue(BigDecimal profitLossValue) {
+        this.profitLossValue = profitLossValue;
     }
 
     public enum ProfitLossStatus{
