@@ -37,6 +37,11 @@ public class PortfolioService {
         Optional<Portfolio> portfolioOpt = portfolioRepository.findByUserAndStockSymbol(
                 registrationRepository.findById(userId).orElseThrow(), stockSymbol);
 
+        if (marketPrice == null) {
+            throw new IllegalArgumentException("Market price cannot be null");
+        }
+
+        System.out.println("Updating market price for User ID: " + userId + ", Stock: " + stockSymbol + ", New Price: " + marketPrice);
         if (portfolioOpt.isPresent()) {
             Portfolio portfolio = portfolioOpt.get();
             portfolio.setMarketPrice(marketPrice);
@@ -44,6 +49,9 @@ public class PortfolioService {
             // ✅ Calculate Profit or Loss
             BigDecimal totalCost = portfolio.getAvgPrice().multiply(BigDecimal.valueOf(portfolio.getQuantity()));
             BigDecimal currentValue = marketPrice.multiply(BigDecimal.valueOf(portfolio.getQuantity()));
+            BigDecimal profitLossValue = currentValue.subtract(totalCost);
+
+            portfolio.setProfitLossValue(profitLossValue);
 
             if (currentValue.compareTo(totalCost) > 0) {
                 portfolio.setProfitLossStatus(Portfolio.ProfitLossStatus.Profit);
@@ -53,11 +61,13 @@ public class PortfolioService {
                 portfolio.setProfitLossStatus(Portfolio.ProfitLossStatus.No_Change);
             }
 
+
             portfolioRepository.save(portfolio);
         } else {
             throw new RuntimeException("Stock not found in portfolio.");
         }
     }
+
 
 
     @Transactional

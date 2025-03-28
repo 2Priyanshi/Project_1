@@ -67,22 +67,22 @@ useEffect(() => {
       <Header2 name={stockDetails.name}/>
     </div>
     <div className="md:col-span-2 row-span-4">
-    <LiveChart symbol={stockSymbol} />
+     {/*<LiveChart symbol={stockSymbol} />*/}
     </div>
 
     <div>
 
-    <Overview
+    {/*<Overview
     symbol={stockSymbol}
     price={quote.price}
     change={quote.change}
     changePercent={quote.changePercent}
     currency={stockDetails.currency}
-/>
+/>*/}
           </div>
 
     <div className="row-span-2 xl:row-span-3">
-    <Details details={stockDetails}/>
+    {/*<Details details={stockDetails}/>*/}
     </div>
 
 

@@ -8,7 +8,9 @@ import Login from "./components/Login";
 import "./App.css";
 import ThemeContext from "./context/ThemeContext";
 import StockContext from "./context/StockContext";
+
 import Portfolio from "./components/Portfolio";
+
 
 
 const App = () => {
