@@ -31,6 +31,60 @@ function Portfolio() {
     { name: "Loss", value: totalLoss, color: "#F44336" }, // Red for Loss
   ];
 
+  const fetchAndStorePrices = async () => {
+    try {
+      const prices = {};
+  
+      for (const company of companies) {
+        const result = await fetchQuote(company); // API Call
+        const price = parseFloat(result["Global Quote"]?.["05. price"] || 0).toFixed(2);
+  
+        if (price !== "0.00") {
+          prices[company] = price;
+        }
+      }
+  
+      localStorage.setItem("marketPrices", JSON.stringify({
+        prices,
+        lastUpdated: new Date().toISOString(),
+      }));
+  
+      return prices;
+    } catch (error) {
+      console.error("Error fetching stock prices:", error);
+      return null;
+    }
+  };
+  
+  const getStoredPrices = () => {
+    const storedData = JSON.parse(localStorage.getItem("marketPrices"));
+  
+    if (!storedData) return {};
+  
+    // Check if stored data is from today
+    const lastUpdated = new Date(storedData.lastUpdated);
+    const now = new Date();
+  
+    const isSameDay = 
+      lastUpdated.getFullYear() === now.getFullYear() &&
+      lastUpdated.getMonth() === now.getMonth() &&
+      lastUpdated.getDate() === now.getDate();
+  
+    return isSameDay ? storedData.prices : {};
+  };
+  
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem("marketPrices"));
+    const lastUpdated = storedData ? new Date(storedData.lastUpdated) : null;
+    const now = new Date();
+  
+    // If no data or data is outdated (not from today), fetch new prices
+    if (!lastUpdated || now.getDate() !== lastUpdated.getDate()) {
+      fetchAndStorePrices();
+    }
+  }, []); // Runs once when the component mounts
+  
+
   useEffect(() => {
     if (!userId) return;
 
@@ -56,15 +110,29 @@ function Portfolio() {
   }, [selectedCompany]);
 
   const companies = [
-    "Nifty",
-    "Tata Steel",
-    "HDFC Bank",
-    "Infosys",
+    
+    
+    
+    
     "IBM",
-    "Wipro",
+  
     "Meta",
-    "ICICI Bank",
-    "Wagend Infra Venture",
+    "AAPL",
+    "GOOGL",
+    "GOOG",
+    "TATACHEM.BSE",
+    "TATAMOTORS.BSE",
+    "GOODN",
+    "GOODO",
+    "GOOG.AMS",
+    "TCS.BSE",
+    "GOODLUCK.BSE",
+    "AGPL",
+    "AAPL.TRT",
+    "APC.FRK",
+    "APC.DEX",
+  
+    
   ];
 
   const fetchStockPrice = async () => {
@@ -73,11 +141,20 @@ function Portfolio() {
       return null;
     }
 
+    const storedPrices = getStoredPrices();
+    if(storedPrices[selectedCompany])
+
+      {
+        console.log("==============");
+        console.log(storedPrices);
+        return storedPrices[selectedCompany];
+      }
     try {
       const result = await fetchQuote(selectedCompany);
       const price = parseFloat(result["Global Quote"]?.["05. price"] || 0).toFixed(2);
 
       if (!price || price === "0.00") {
+        
         console.error(`Failed to fetch stock price for ${selectedCompany}.`);
         return null;
       }
@@ -107,6 +184,7 @@ function Portfolio() {
     const price = await fetchStockPrice();
     if (!price) {
       alert("Transaction failed: Unable to fetch stock price.");
+      
       return;
     }
 
@@ -254,7 +332,7 @@ function Portfolio() {
 
 
 
-            {selectedCompany ? (
+           {selectedCompany ? (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                 <h2 className="font-bold text-lg">{selectedCompany}</h2>
 
@@ -262,7 +340,8 @@ function Portfolio() {
                   <form className={`mt-1 space-y-3 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white/40 backdrop-blur-lg border border-white/30"}`}>
 
                     {/* Quantity Row */}
-                    <div className={`flex items-center gap-4`}>
+
+                    <div className={`flex items-center gap-4 `}>
                       <label className="w-40 font-medium">Quantity:</label>
                       <input
                         type="number"
@@ -363,13 +442,13 @@ function Portfolio() {
 
 
                 <Card className="flex flex-col transition-all duration-500 ease-in-out hover:shadow-lg">
-                  <div className="overflow-y-auto max-h-100">
+                  <div className="overflow-y-auto max-h-[350px] scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
                     <ul>
                       {investments.length > 0 && (
                         <motion.li
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="p-3 grid grid-cols-5 font-bold border-b"
+                          className="p-3 grid grid-cols-5 font-bold border-b sticky top-0 z-10 bg-white"
                         >
                           <span className="text-left">Stock</span>
                           <span className="text-center">Shares</span>
